@@ -12,26 +12,26 @@ in a matter of seconds. Some options may make it somewhat slower
 
 ssort -h
 --------
-Usage: ssort [OPTIONS] [FILE]...
+	Usage: ssort [OPTIONS] [FILE]...
 
-Arguments:
-  [FILE]...  input files (use '-' for stdin, default if no files provided)
+	Arguments:
+	  [FILE]...  input files (use '-' for stdin, default if no files provided)
 
-Options:
-  -h, --help     Print help (see more with '--help')
-  -V, --version  Print version
+	Options:
+	  -h, --help     Print help (see more with '--help')
+	  -V, --version  Print version
 
-Sorting Options:
-  -i, --ignore-case       ignore case when sorting
-  -l, --line              use entire line for sorting instead of first word
-  -d, --dictionary-order  dictionary order: ignore non-alphabetic characters when finding first word
-  -r, --reverse           reverse the sort order
-  -s, --stable            stable sort (maintains original order of equal elements)
+	Sorting Options:
+	  -i, --ignore-case       ignore case when sorting
+	  -l, --line              use entire line for sorting instead of first word
+	  -d, --dictionary-order  dictionary order: ignore non-alphabetic characters when finding first word
+	  -r, --reverse           reverse the sort order
+	  -s, --stable            stable sort (maintains original order of equal elements)
 
-Output:
-  -a, --right-align      right-align output by adding leading spaces
-  -x, --exclude-no-word  exclude lines without words
-  -w, --word-only        output only the word used for sorting (excludes the remainder of lines)
+	Output:
+	  -a, --right-align      right-align output by adding leading spaces
+	  -x, --exclude-no-word  exclude lines without words
+	  -w, --word-only        output only the word used for sorting (excludes the remainder of lines)
 
 Basic behavior
 --------------

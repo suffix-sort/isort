@@ -72,9 +72,9 @@ jobs:
         run: |
           BINARY_PATH=""
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            BINARY_PATH="target/release/isort"
+            BINARY_PATH="target/release/ssort"
           else
-            BINARY_PATH="target/${{ matrix.target }}/release/isort"
+            BINARY_PATH="target/${{ matrix.target }}/release/ssort"
           fi
           strip "$BINARY_PATH" || true
 
@@ -83,33 +83,33 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: powershell
         run: |
-          $BINARY_PATH = "target/${{ matrix.target }}/release/isort.exe"
+          $BINARY_PATH = "target/${{ matrix.target }}/release/ssort.exe"
           if (Test-Path $BINARY_PATH) {
-              7z a "isort-${{ matrix.target }}.zip" $BINARY_PATH
+              7z a "ssort-${{ matrix.target }}.zip" $BINARY_PATH
           } else {
-              Write-Error "Error: isort.exe not found!"
+              Write-Error "Error: ssort.exe not found!"
               exit 1
           }
 
       - name: Compress binary (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          BINARY_PATH="target/${{ matrix.target }}/release/isort"
+          BINARY_PATH="target/${{ matrix.target }}/release/ssort"
           if [ -f "$BINARY_PATH" ]; then
-              tar czf "isort-${{ matrix.target }}.tar.gz" -C "target/${{ matrix.target }}/release" isort
+              tar czf "ssort-${{ matrix.target }}.tar.gz" -C "target/${{ matrix.target }}/release" ssort
           else
-              echo "Error: isort binary not found!"
+              echo "Error: ssort binary not found!"
               exit 1
           fi
 
       - name: Compress binary (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          BINARY_PATH="target/release/isort"
+          BINARY_PATH="target/release/ssort"
           if [ -f "$BINARY_PATH" ]; then
-              tar czf "isort-${{ matrix.target }}.tar.gz" -C "target/release" isort
+              tar czf "ssort-${{ matrix.target }}.tar.gz" -C "target/release" ssort
           else
-              echo "Error: isort binary not found!"
+              echo "Error: ssort binary not found!"
               exit 1
           fi
 
@@ -118,35 +118,35 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: powershell
         run: |
-          $FILE = "isort-${{ matrix.target }}.zip"
+          $FILE = "ssort-${{ matrix.target }}.zip"
           certutil -hashfile $FILE SHA256 | findstr /v "CertUtil" | findstr /v "hashfile" > "${FILE}.sha256"
 
       - name: Generate checksum (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           if command -v sha256sum >/dev/null 2>&1; then
-              sha256sum "isort-${{ matrix.target }}.tar.gz" > "isort-${{ matrix.target }}.tar.gz.sha256"
+              sha256sum "ssort-${{ matrix.target }}.tar.gz" > "ssort-${{ matrix.target }}.tar.gz.sha256"
           else
-              shasum -a 256 "isort-${{ matrix.target }}.tar.gz" > "isort-${{ matrix.target }}.tar.gz.sha256"
+              shasum -a 256 "ssort-${{ matrix.target }}.tar.gz" > "ssort-${{ matrix.target }}.tar.gz.sha256"
           fi
 
       - name: Generate checksum (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           if command -v sha256sum >/dev/null 2>&1; then
-              sha256sum "isort-${{ matrix.target }}.tar.gz" > "isort-${{ matrix.target }}.tar.gz.sha256"
+              sha256sum "ssort-${{ matrix.target }}.tar.gz" > "ssort-${{ matrix.target }}.tar.gz.sha256"
           else
-              shasum -a 256 "isort-${{ matrix.target }}.tar.gz" > "isort-${{ matrix.target }}.tar.gz.sha256"
+              shasum -a 256 "ssort-${{ matrix.target }}.tar.gz" > "ssort-${{ matrix.target }}.tar.gz.sha256"
           fi
 
       # Upload artifact per target (directory)
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: isort-${{ matrix.target }}
+          name: ssort-${{ matrix.target }}
           path: |
-            isort-${{ matrix.target }}.${{ matrix.ext }}
-            isort-${{ matrix.target }}.${{ matrix.ext }}.sha256
+            ssort-${{ matrix.target }}.${{ matrix.ext }}
+            ssort-${{ matrix.target }}.${{ matrix.ext }}.sha256
 
   create-release:
     name: Create Release
@@ -180,7 +180,7 @@ jobs:
         uses: ncipollo/release-action@v1.14.0
         with:
           tag: ${{ github.ref_name }}
-          name: isort ${{ github.ref_name }}
+          name: ssort ${{ github.ref_name }}
           draft: false
           prerelease: false
           artifacts: "artifacts_flat/*"
