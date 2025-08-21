@@ -3,7 +3,7 @@ name = "isort"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-authors = [x48 <x48@x48.org>]
+authors = ["x48 <x48@x48.org>"]
 
 [dependencies]
 clap = { version = "4.5.45", features = ["derive"] }
