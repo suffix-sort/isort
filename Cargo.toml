@@ -1,9 +1,29 @@
 [package]
-name = "isort"
+name = "ssort"
+description = "CLI tool for inverse/suffix sorting"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["x48 <x48@x48.org>"]
+repository = "https://github.com/suffix-sort/ssort"
+readme = "README.md"
+keywords = [
+	"sort",
+	"sorting",
+	"inverse-sort",
+	"lexicographic",
+	"unicode",
+	"collation",
+	"text-processing",
+	"suffix",
+	"reverse-sort"
+]
+categories = [
+	"algorithms",
+	"text-processing",
+	"command-line-utilities",
+	"internationalization"
+]
 
 [dependencies]
 clap = { version = "4.5.45", features = ["derive"] }

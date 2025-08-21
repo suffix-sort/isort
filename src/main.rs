@@ -9,9 +9,9 @@ use std::io::Write;
 #[derive(Parser, Debug)]
 #[command(
     version,
-    about = "isort: inverse lexicographic (suffix) sort by first word (default) or whole line",
+    about = "ssort: inverse lexicographic (suffix) sort by first word (default) or whole line",
     long_about = r#"
-isort: inverse lexicographic (suffix) sort by first word (default) or whole line
+ssort: inverse lexicographic (suffix) sort by first word (default) or whole line
 
 The inverse lexicographic sort, a.k.a. suffix sort, is a sort order
 where strings are compared from the last character towards the first.

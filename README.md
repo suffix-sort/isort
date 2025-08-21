@@ -1,13 +1,37 @@
-isort
+ssort
 =====
 
-`isort` is a CLI sort utility for inverse lexicographic (suffix) sorting.
+`ssort` is a CLI sort utility for inverse lexicographic (suffix) sorting.
 
 An inverse/suffix sort order looks at the last character first, and
 works backwards towards the first.
 
-(While "inverse sort" is a common term in Computer Science, "suffix sort"
-is more familiar to linguists.)
+`ssort` is designed to be fast. Typically it can process 1M lines of text
+in a matter of seconds. Some options may make it somewhat slower
+(e.g. `--stable`).
+
+ssort -h
+--------
+Usage: ssort [OPTIONS] [FILE]...
+
+Arguments:
+  [FILE]...  input files (use '-' for stdin, default if no files provided)
+
+Options:
+  -h, --help     Print help (see more with '--help')
+  -V, --version  Print version
+
+Sorting Options:
+  -i, --ignore-case       ignore case when sorting
+  -l, --line              use entire line for sorting instead of first word
+  -d, --dictionary-order  dictionary order: ignore non-alphabetic characters when finding first word
+  -r, --reverse           reverse the sort order
+  -s, --stable            stable sort (maintains original order of equal elements)
+
+Output:
+  -a, --right-align      right-align output by adding leading spaces
+  -x, --exclude-no-word  exclude lines without words
+  -w, --word-only        output only the word used for sorting (excludes the remainder of lines)
 
 Basic behavior
 --------------
@@ -15,10 +39,9 @@ The CLI tool feels very much like the standard `sort` utility, with the
 only notable exception that the short option for `--ignore-case` is not
 `-f` but the more intuitive `-i`.
 
-If given an argument, `isort` will take it as a file path and spit out
-the default result.
+If given an argument, `ssort` will take it as a file path:
 
-	$ isort tests/test1.txt
+	$ ssort tests/test1.txt
 	a
 	aa
 	ba
@@ -27,50 +50,83 @@ the default result.
 	ab
 	ac
 	bc
+	abc
 	z
 	az
 	bz
 	zz
+	zzz
+
+
+Without arguments, ssort takes input from stdin.
+The above is therefore equivalent to:
+
+	$ cat tests/test1.txt | ssort
+	...
+
+Options
+-------
+
+### `--right-align` / `-a`
 
 In order to make the comparisons easier on the eye, use the `-a` option,
 which right-aligns the results:
 
-	$ isort -a tests/test1.txt
-	 a
-	aa
-	ba
-	za
-	 b
-	ab
-	ac
-	bc
-	 z
-	az
-	bz
-	zz
+	$ ssort -a tests/test1.txt
+	  a
+	 aa
+	 ba
+	 za
+	  b
+	 ab
+	 ac
+	 bc
+	abc
+	  z
+	 az
+	 bz
+	 zz
+	zzz
 
-By default, `isort` uses the first word on the line for sorting and ignores
+By default, `ssort` uses the first word on the line for sorting and ignores
 the rest of the line:
 
 	$ cat tests/test2.txt
 	a zzz
 	aa bbb
-	ab xxx
-	b ignored
-	za ---
+	ab xxxxx
+	b aaa
+	za -
 
-	$ isort -a tests/test2.txt
+	$ ssort -a tests/test2.txt
 	 a zzz
 	aa bbb
-	za ---
-	 b ignored
-	ab xxx
+	za -
+	 b aaa
+	ab xxxxx
+
+### `--line` / `-l`
 
 With the `-l`/`--line` option, the text is sorted using entire lines:
 
-	$ isort -al tests/test2.txt
-	   za ---
-	   aa bbb
-	b ignored
-	   ab xxx
-		a zzz
+	$ ssort -al tests/test2.txt
+		za -
+	   b aaa
+	  aa bbb
+	ab xxxxx
+	   a zzz
+
+### `--dictionary-order` / `-d`
+
+The `-d` option ignores any non-alphabetic characters in identifying the
+first word. It has no effect in combination with the `--line` option.
+
+### `--word-only` / `-w`
+
+The `-w` option outputs only the word used in the sort, dropping the
+remainder of lines. It has no effect in combination with `--line`.
+
+### `--exclude-no-word` / `-x`
+
+The `-x` option removes empty lines and lines without any alphanumeric
+characters from the output. It has no effect in combination with `-l`.

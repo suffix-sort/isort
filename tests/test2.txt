@@ -1,5 +1,5 @@
 a zzz
 aa bbb
-ab xxx
-b ignored
-za ---
+ab xxxxx
+b aaa
+za -
