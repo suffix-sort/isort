@@ -1,0 +1,21 @@
+[package]
+name = "suffixsort"
+description = "Library for inverse lexicographic sorting / suffix sorting"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["x48 <x48@x48.org>"]
+repository = "https://github.com/suffixsort/suffixsort"
+keywords = [
+	"sorting",
+	"inverse-sort",
+	"text-processing",
+	"suffix",
+]
+categories = [
+	"text-processing",
+	"algorithms",
+]
+
+[dependencies]
+rayon = "1.11.0"

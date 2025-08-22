@@ -1,0 +1,26 @@
+[package]
+name = "ssort"
+description = "CLI tool for inverse/suffix sorting"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["x48 <x48@x48.org>"]
+repository = "https://github.com/suffixsort/suffixsort"
+readme = "README.md"
+keywords = [
+	"cli",
+	"sorting",
+	"inverse-sort",
+	"text-processing",
+	"suffix",
+]
+categories = [
+	"text-processing",
+	"command-line-utilities",
+	"algorithms",
+]
+
+[dependencies]
+clap = { version = "4.5.45", features = ["derive"] }
+rayon = "1.11.0"
+suffixsort = { path = "../core" }
