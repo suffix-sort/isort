@@ -1,7 +1,7 @@
 [package]
 name = "ssort"
 description = "CLI tool for suffix (inverse lexicographic) sorting"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["x48 <x48@x48.org>"]
@@ -23,8 +23,8 @@ categories = [
 [dependencies]
 clap = { version = "4.5.45", features = ["derive"] }
 rayon = "1.11.0"
-# suffixsort = "0.2.0"
-suffixsort = { path = "../core" }
+suffixsort = "0.3.0"
+# suffixsort = { path = "../core" }
 
 [[bin]]
 name = "ssort"
