@@ -150,16 +150,31 @@ impl SortConfig {
 
                     match word_start {
                         Some(start) => {
-                            let word_end = line[start..]
-                                .char_indices()
-                                .find(|(_, c)| !(c.is_alphabetic() || *c == '-'))
-                                .map(|(idx, _)| start + idx)
-                                .unwrap_or_else(|| line.len());
+                            // Find the end of the word, allowing dashes within the word
+                            let mut word_end = start;
+                            let mut visual_length = 0;
+                            let mut in_word = false;
+
+                            for (idx, c) in line.char_indices().skip(start) {
+                                if c.is_alphabetic() {
+                                    if !in_word {
+                                        in_word = true;
+                                    }
+                                    visual_length += 1;
+                                    word_end = idx + c.len_utf8();
+                                } else if c == '-' && in_word {
+                                    // Include dashes that are part of the word
+                                    visual_length += 1;
+                                    word_end = idx + c.len_utf8();
+                                } else if in_word {
+                                    // We've reached the end of the word
+                                    break;
+                                }
+                            }
 
                             let word = line[start..word_end].to_string();
                             let prepared_word = self.prepare_key(&word);
-                            let word_len = prepared_word.chars().count();
-                            (prepared_word, Some(start), Some(word_len))
+                            (prepared_word, Some(start), Some(visual_length))
                         }
                         None => (String::new(), None, None),
                     }
@@ -225,7 +240,7 @@ impl SortConfig {
 
     fn compute_padding_info(&self, processed: &[ProcessedLine]) -> PaddingInfo {
         if self.dictionary_order && !self.use_entire_line && !self.word_only {
-            // For dictionary order with right-align, we need the end position of the first word
+            // For dictionary order with right-align, we need the visual end position of the first word
             let max_end_pos = processed
                 .par_iter()
                 .filter_map(|p| p.visual_start.and_then(|s| p.word_length.map(|l| s + l)))
