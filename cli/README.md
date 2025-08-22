@@ -1,5 +1,5 @@
-ssort
-=====
+ssort - Suffix-sorting CLI tool
+===============================
 
 `ssort` is a CLI sort utility for inverse lexicographic (suffix) sorting.
 
@@ -27,6 +27,7 @@ ssort -h
 	  -d, --dictionary-order  dictionary order: ignore non-alphabetic characters when finding first word
 	  -r, --reverse           reverse the sort order
 	  -s, --stable            stable sort (maintains original order of equal elements)
+	  -n, --normalize         normalize unicode to NFC form
 
 	Output:
 	  -a, --right-align      right-align output by adding leading spaces
@@ -130,3 +131,5 @@ remainder of lines. It has no effect in combination with `--line`.
 
 The `-x` option removes empty lines and lines without any alphanumeric
 characters from the output. It has no effect in combination with `-l`.
+ssort: inverse lexicographic (suffix) sort by first word (default) or whole line
+

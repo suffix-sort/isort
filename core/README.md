@@ -6,6 +6,7 @@ A high-performance Rust library for inverse lexicographic (suffix) sorting, prov
 
 - **Inverse Lexicographic Sorting**: Compare strings from the last character towards the first
 - **Flexible Configuration**: Multiple sorting modes including dictionary order, case insensitivity, and reverse sorting
+- **Unicode NFC Normalization**: Optional Unicode normalization for consistent sorting of equivalent sequences
 - **High Performance**: Parallel processing using Rayon for handling large datasets efficiently
 - **Dual API**: Both high-level line processing and low-level comparator functions
 - **Zero-Cost Abstractions**: Minimal performance overhead through Rust's zero-cost abstractions
@@ -26,9 +27,9 @@ These options have minimal impact on performance:
 These options may reduce performance when enabled:
 - `normalize`: Unicode NFC normalization adds processing overhead during key extraction
 - `stable`: Stable sorting algorithms are generally slower than unstable variants
-- `ignore_case`: Case folding during comparison adds minor overhead
+- `ignore_case`: Case folding during key extraction adds minor overhead
 - `dictionary_order`: More complex key extraction logic
-- `use_entire_line`: Simpler key extraction (uses whole line) but may use more memory
+- `use_entire_line`: Simpler key extraction but may use more memory
 
 For maximum throughput with large datasets, use the default configuration (all options disabled).
 
@@ -86,11 +87,13 @@ use suffixsort::SortConfig;
 use std::cmp::Ordering;
 
 let config = SortConfig {
-    ignore_case: true,
+    ignore_case: true,  // Note: this does not affect the low-level comparator!
     reverse: false,
     ..Default::default()
 };
 
+// The low-level comparator does not apply ignore_case or normalization.
+// Users must pre-process strings if needed.
 let comparer = config.get_comparer();
 let mut words = vec!["Banana", "apple", "Cherry"];
 
@@ -106,7 +109,7 @@ words.par_sort_by(|a, b| comparer(a, b));
 
 The `SortConfig` struct provides these options:
 
-- `ignore_case`: Case-insensitive comparison (minor performance impact)
+- `ignore_case`: Case-insensitive comparison (minimal performance impact, applied during key extraction)
 - `use_entire_line`: Use entire line instead of first word for sorting (simpler but may use more memory)
 - `dictionary_order`: Ignore non-alphabetic characters when finding first word (performance impact)
 - `reverse`: Reverse the sort order (performance-neutral)
