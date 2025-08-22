@@ -1,7 +1,7 @@
 [package]
 name = "suffixsort"
 description = "Library for suffix (inverse lexicographic) sorting"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["x48 <x48@x48.org>"]
