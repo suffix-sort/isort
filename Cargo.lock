@@ -187,11 +187,11 @@ dependencies = [
 
 [[package]]
 name = "ssort"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap",
  "rayon",
- "suffixsort",
+ "suffixsort 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -202,7 +202,16 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "suffixsort"
-version = "0.1.0"
+version = "0.2.0"
+dependencies = [
+ "rayon",
+]
+
+[[package]]
+name = "suffixsort"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e7186b1544006512e37be0d0ef20ba58568bdc5fd55133f06c2838de8315f7e"
 dependencies = [
  "rayon",
 ]
