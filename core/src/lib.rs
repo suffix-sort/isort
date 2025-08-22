@@ -33,7 +33,9 @@ pub struct PaddingInfo {
 impl SortConfig {
     pub fn process_lines(&self, lines: Vec<String>) -> (Vec<ProcessedLine>, Option<PaddingInfo>) {
         // Process lines (extract keys, filter, etc.)
-        let mut processed = if self.right_align && self.dictionary_order && !self.use_entire_line {
+        let mut processed = if self.use_entire_line {
+            self.process_lines_entire_line(&lines)
+        } else if self.right_align && self.dictionary_order {
             self.process_lines_dict_align(&lines)
         } else {
             self.process_lines_standard(&lines)
@@ -56,6 +58,9 @@ impl SortConfig {
     /// This allows advanced users to build custom sorting pipelines while using
     /// the same comparison logic as the ssort tool.
     ///
+    /// Note: For maximum performance, users should pre-normalize and pre-case-fold
+    /// their strings if they need these features.
+    ///
     /// # Example
     /// ```
     /// use suffixsort::SortConfig;
@@ -72,22 +77,12 @@ impl SortConfig {
     /// // Note: The exact result depends on the inverse lexicographic comparison
     /// ```
     pub fn get_comparer(&self) -> impl Fn(&str, &str) -> Ordering + '_ {
-        let ignore_case = self.ignore_case;
         let reverse = self.reverse;
 
         move |a: &str, b: &str| {
-            // Create case folding function based on flag
-            let fold = |c: char| -> Box<dyn Iterator<Item = char>> {
-                if ignore_case {
-                    Box::new(c.to_lowercase())
-                } else {
-                    Box::new(std::iter::once(c))
-                }
-            };
-
             // Compare characters in reverse order (inverse lexicographic)
-            let mut a_iter = a.chars().rev().flat_map(&fold);
-            let mut b_iter = b.chars().rev().flat_map(&fold);
+            let mut a_iter = a.chars().rev();
+            let mut b_iter = b.chars().rev();
 
             let mut ordering = Ordering::Equal;
             loop {
@@ -120,12 +115,29 @@ impl SortConfig {
         }
     }
 
-    fn normalize_key(&self, key: &str) -> String {
-        if self.normalize {
-            key.nfc().collect()
-        } else {
-            key.to_string()
-        }
+    fn process_lines_entire_line(&self, lines: &[String]) -> Vec<ProcessedLine> {
+        lines
+            .par_iter()
+            .enumerate()
+            .filter_map(|(index, line)| {
+                // When using entire line, exclude_no-word means exclude empty lines
+                if self.exclude_no_word && line.is_empty() {
+                    return None;
+                }
+
+                // For use_entire_line, we can use the line directly as the key
+                // after applying normalization and case folding
+                let key = self.prepare_key(line);
+
+                Some(ProcessedLine {
+                    original: line.clone(),
+                    key,
+                    index,
+                    visual_start: None,
+                    word_length: None,
+                })
+            })
+            .collect()
     }
 
     fn process_lines_dict_align(&self, lines: &[String]) -> Vec<ProcessedLine> {
@@ -148,9 +160,9 @@ impl SortConfig {
                                 .unwrap_or_else(|| line.len());
 
                             let word = line[start..word_end].to_string();
-                            let normalized_word = self.normalize_key(&word);
-                            let word_len = normalized_word.chars().count();
-                            (normalized_word, Some(start), Some(word_len))
+                            let prepared_word = self.prepare_key(&word);
+                            let word_len = prepared_word.chars().count();
+                            (prepared_word, Some(start), Some(word_len))
                         }
                         None => (String::new(), None, None),
                     }
@@ -176,9 +188,7 @@ impl SortConfig {
             .par_iter()
             .enumerate()
             .filter_map(|(index, line)| {
-                let key = if self.use_entire_line {
-                    self.normalize_key(line)
-                } else if self.dictionary_order {
+                let key = if self.dictionary_order {
                     let word_start = line
                         .char_indices()
                         .find(|(_, c)| c.is_alphabetic())
@@ -194,7 +204,7 @@ impl SortConfig {
                             .map(|(idx, _)| word_start + idx)
                             .unwrap_or_else(|| line.len());
 
-                        self.normalize_key(&line[word_start..word_end])
+                        line[word_start..word_end].to_string()
                     }
                 } else {
                     let mut start = 0;
@@ -214,13 +224,16 @@ impl SortConfig {
                     }
 
                     if in_word && end == 0 {
-                        self.normalize_key(&line[start..])
+                        line[start..].to_string()
                     } else if in_word {
-                        self.normalize_key(&line[start..end])
+                        line[start..end].to_string()
                     } else {
                         String::new()
                     }
                 };
+
+                // Apply normalization and case folding to the extracted key
+                let key = self.prepare_key(&key);
 
                 if self.exclude_no_word && key.is_empty() {
                     None
@@ -235,6 +248,21 @@ impl SortConfig {
                 }
             })
             .collect()
+    }
+
+    // Helper function to prepare a key (normalize and case-fold if needed)
+    fn prepare_key(&self, key: &str) -> String {
+        let normalized = if self.normalize {
+            key.nfc().collect()
+        } else {
+            key.to_string()
+        };
+
+        if self.ignore_case {
+            normalized.to_lowercase()
+        } else {
+            normalized
+        }
     }
 
     fn compute_padding_info(&self, processed: &[ProcessedLine]) -> PaddingInfo {
