@@ -131,5 +131,3 @@ remainder of lines. It has no effect in combination with `--line`.
 
 The `-x` option removes empty lines and lines without any alphanumeric
 characters from the output. It has no effect in combination with `-l`.
-ssort: inverse lexicographic (suffix) sort by first word (default) or whole line
-
