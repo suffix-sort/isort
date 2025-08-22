@@ -8,21 +8,19 @@ authors = ["x48 <x48@x48.org>"]
 repository = "https://github.com/suffix-sort/ssort"
 readme = "README.md"
 keywords = [
+	"cli",
+	"command-line",
 	"sort",
 	"sorting",
 	"inverse-sort",
 	"lexicographic",
-	"unicode",
-	"collation",
 	"text-processing",
 	"suffix",
-	"reverse-sort"
 ]
 categories = [
-	"algorithms",
 	"text-processing",
 	"command-line-utilities",
-	"internationalization"
+	"algorithms",
 ]
 
 [dependencies]
