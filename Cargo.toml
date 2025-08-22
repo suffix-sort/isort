@@ -9,11 +9,8 @@ repository = "https://github.com/suffix-sort/ssort"
 readme = "README.md"
 keywords = [
 	"cli",
-	"command-line",
-	"sort",
 	"sorting",
 	"inverse-sort",
-	"lexicographic",
 	"text-processing",
 	"suffix",
 ]
