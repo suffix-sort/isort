@@ -32,16 +32,14 @@ pub struct PaddingInfo {
 
 impl SortConfig {
     pub fn process_lines(&self, lines: Vec<String>) -> (Vec<ProcessedLine>, Option<PaddingInfo>) {
-        // Process lines (extract keys, filter, etc.)
+        // Process lines - output formatting options should not affect processing
         let mut processed = if self.use_entire_line {
             self.process_lines_entire_line(&lines)
-        } else if self.right_align && self.dictionary_order {
-            self.process_lines_dict_align(&lines)
         } else {
             self.process_lines_standard(&lines)
         };
 
-        // Compute padding information if needed
+        // Compute padding information if needed (purely for output formatting)
         let padding_info = if self.right_align {
             Some(self.compute_padding_info(&processed))
         } else {
@@ -67,14 +65,12 @@ impl SortConfig {
     /// use std::cmp::Ordering;
     ///
     /// let config = SortConfig {
-    ///     ignore_case: true,
     ///     reverse: false,
     ///     ..SortConfig::default()
     /// };
     ///
     /// let comparer = config.get_comparer();
-    /// let result = comparer("apple", "Banana");
-    /// // Note: The exact result depends on the inverse lexicographic comparison
+    /// let result = comparer("apple", "banana");
     /// ```
     pub fn get_comparer(&self) -> impl Fn(&str, &str) -> Ordering + '_ {
         let reverse = self.reverse;
@@ -140,12 +136,13 @@ impl SortConfig {
             .collect()
     }
 
-    fn process_lines_dict_align(&self, lines: &[String]) -> Vec<ProcessedLine> {
+    fn process_lines_standard(&self, lines: &[String]) -> Vec<ProcessedLine> {
         lines
             .par_iter()
             .enumerate()
             .filter_map(|(index, line)| {
-                let (key, visual_start, word_length) = {
+                let (key, visual_start, word_length) = if self.dictionary_order {
+                    // For dictionary order, we need to track visual information
                     let word_start = line
                         .char_indices()
                         .find(|(_, c)| c.is_alphabetic())
@@ -166,47 +163,8 @@ impl SortConfig {
                         }
                         None => (String::new(), None, None),
                     }
-                };
-
-                if self.exclude_no_word && key.is_empty() {
-                    None
                 } else {
-                    Some(ProcessedLine {
-                        original: line.clone(),
-                        key,
-                        index,
-                        visual_start,
-                        word_length,
-                    })
-                }
-            })
-            .collect()
-    }
-
-    fn process_lines_standard(&self, lines: &[String]) -> Vec<ProcessedLine> {
-        lines
-            .par_iter()
-            .enumerate()
-            .filter_map(|(index, line)| {
-                let key = if self.dictionary_order {
-                    let word_start = line
-                        .char_indices()
-                        .find(|(_, c)| c.is_alphabetic())
-                        .map(|(idx, _)| idx)
-                        .unwrap_or(usize::MAX);
-
-                    if word_start == usize::MAX {
-                        String::new()
-                    } else {
-                        let word_end = line[word_start..]
-                            .char_indices()
-                            .find(|(_, c)| !(c.is_alphabetic() || *c == '-'))
-                            .map(|(idx, _)| word_start + idx)
-                            .unwrap_or_else(|| line.len());
-
-                        line[word_start..word_end].to_string()
-                    }
-                } else {
+                    // For non-dictionary order, extract key normally
                     let mut start = 0;
                     let mut end = 0;
                     let mut in_word = false;
@@ -223,17 +181,17 @@ impl SortConfig {
                         }
                     }
 
-                    if in_word && end == 0 {
+                    let key = if in_word && end == 0 {
                         line[start..].to_string()
                     } else if in_word {
                         line[start..end].to_string()
                     } else {
                         String::new()
-                    }
-                };
+                    };
 
-                // Apply normalization and case folding to the extracted key
-                let key = self.prepare_key(&key);
+                    let prepared_key = self.prepare_key(&key);
+                    (prepared_key, None, None)
+                };
 
                 if self.exclude_no_word && key.is_empty() {
                     None
@@ -242,8 +200,8 @@ impl SortConfig {
                         original: line.clone(),
                         key,
                         index,
-                        visual_start: None,
-                        word_length: None,
+                        visual_start,
+                        word_length,
                     })
                 }
             })
@@ -267,6 +225,7 @@ impl SortConfig {
 
     fn compute_padding_info(&self, processed: &[ProcessedLine]) -> PaddingInfo {
         if self.dictionary_order && !self.use_entire_line && !self.word_only {
+            // For dictionary order with right-align, we need the end position of the first word
             let max_end_pos = processed
                 .par_iter()
                 .filter_map(|p| p.visual_start.and_then(|s| p.word_length.map(|l| s + l)))
@@ -278,6 +237,7 @@ impl SortConfig {
                 use_end_pos: true,
             }
         } else {
+            // For other modes, just use key length
             let max_key_len = processed
                 .par_iter()
                 .map(|p| p.key.chars().count())
