@@ -1,5 +1,6 @@
 use rayon::prelude::*;
 use std::cmp::Ordering;
+use unicode_normalization::UnicodeNormalization;
 
 #[derive(Clone, Debug)]
 pub struct SortConfig {
@@ -11,6 +12,7 @@ pub struct SortConfig {
     pub right_align: bool,
     pub exclude_no_word: bool,
     pub word_only: bool,
+    pub normalize: bool,
 }
 
 #[derive(Debug)]
@@ -118,6 +120,14 @@ impl SortConfig {
         }
     }
 
+    fn normalize_key(&self, key: &str) -> String {
+        if self.normalize {
+            key.nfc().collect()
+        } else {
+            key.to_string()
+        }
+    }
+
     fn process_lines_dict_align(&self, lines: &[String]) -> Vec<ProcessedLine> {
         lines
             .par_iter()
@@ -138,8 +148,9 @@ impl SortConfig {
                                 .unwrap_or_else(|| line.len());
 
                             let word = line[start..word_end].to_string();
-                            let word_len = word.chars().count();
-                            (word, Some(start), Some(word_len))
+                            let normalized_word = self.normalize_key(&word);
+                            let word_len = normalized_word.chars().count();
+                            (normalized_word, Some(start), Some(word_len))
                         }
                         None => (String::new(), None, None),
                     }
@@ -166,7 +177,7 @@ impl SortConfig {
             .enumerate()
             .filter_map(|(index, line)| {
                 let key = if self.use_entire_line {
-                    line.clone()
+                    self.normalize_key(line)
                 } else if self.dictionary_order {
                     let word_start = line
                         .char_indices()
@@ -183,7 +194,7 @@ impl SortConfig {
                             .map(|(idx, _)| word_start + idx)
                             .unwrap_or_else(|| line.len());
 
-                        line[word_start..word_end].to_string()
+                        self.normalize_key(&line[word_start..word_end])
                     }
                 } else {
                     let mut start = 0;
@@ -203,9 +214,9 @@ impl SortConfig {
                     }
 
                     if in_word && end == 0 {
-                        line[start..].to_string()
+                        self.normalize_key(&line[start..])
                     } else if in_word {
-                        line[start..end].to_string()
+                        self.normalize_key(&line[start..end])
                     } else {
                         String::new()
                     }
@@ -288,6 +299,7 @@ impl Default for SortConfig {
             right_align: false,
             exclude_no_word: false,
             word_only: false,
+            normalize: false,
         }
     }
 }

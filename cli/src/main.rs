@@ -57,6 +57,10 @@ struct Args {
     /// output only the word used for sorting (excludes the remainder of lines)
     #[arg(short = 'w', long = "word-only", help_heading = "Output")]
     word_only: bool,
+
+    /// normalize unicode to NFC form
+    #[arg(short = 'n', long = "normalize", help_heading = "Sorting Options")]
+    normalize: bool,
 }
 
 fn main() -> io::Result<()> {
@@ -75,6 +79,7 @@ fn main() -> io::Result<()> {
         right_align: args.right_align,
         exclude_no_word: args.exclude_no_word,
         word_only: args.word_only,
+        normalize: args.normalize,
     };
 
     // Process and sort lines using the library

@@ -23,4 +23,9 @@ categories = [
 [dependencies]
 clap = { version = "4.5.45", features = ["derive"] }
 rayon = "1.11.0"
-suffixsort = "0.2.0"
+# suffixsort = "0.2.0"
+suffixsort = { path = "../core" }
+
+[[bin]]
+name = "ssort"
+path = "src/main.rs"
